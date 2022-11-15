@@ -1,8 +1,8 @@
-use std::collections::VecDeque;
+use std::{cmp::Ordering, collections::VecDeque};
 
+#[allow(dead_code)]
 fn find_median_sorted_arrays(nums1: Vec<i32>, nums2: Vec<i32>) -> f64 {
-    let merged_vec = merge_vectors(nums1, nums2);
-    get_median(merged_vec)
+    get_median(merge_vectors(nums1, nums2))
 }
 
 fn merge_vectors(vec1: Vec<i32>, vec2: Vec<i32>) -> Vec<i32> {
@@ -10,27 +10,33 @@ fn merge_vectors(vec1: Vec<i32>, vec2: Vec<i32>) -> Vec<i32> {
     let mut vec1 = VecDeque::from(vec1);
     let mut vec2 = VecDeque::from(vec2);
 
-    while vec1.len() > 0 || vec2.len() > 0 {
-        if vec1.len() == 0 {
-            let popped = vec2.pop_front().unwrap();
-            result.push(popped);
-            continue;
-        } else if vec2.len() == 0 {
-            let popped = vec1.pop_front().unwrap();
-            result.push(popped);
-            continue;
-        }
-
-        let value1 = vec1.front().unwrap();
-        let value2 = vec2.front().unwrap();
-
-        if value1 < value2 {
-            result.push(vec1.pop_front().unwrap());
-        } else if value2 < value1 {
-            result.push(vec2.pop_front().unwrap());
-        } else {
-            result.push(vec1.pop_front().unwrap());
-            result.push(vec2.pop_front().unwrap());
+    loop {
+        match vec1.front() {
+            Some(value1) => match vec2.front() {
+                Some(value2) => match value1.cmp(value2) {
+                    Ordering::Less => {
+                        result.push(vec1.pop_front().unwrap());
+                    }
+                    Ordering::Equal => {
+                        result.push(vec1.pop_front().unwrap());
+                        result.push(vec2.pop_front().unwrap());
+                    }
+                    Ordering::Greater => {
+                        result.push(vec2.pop_front().unwrap());
+                    }
+                },
+                None => {
+                    result.push(vec1.pop_front().unwrap());
+                }
+            },
+            None => match vec2.front() {
+                Some(_) => {
+                    result.push(vec2.pop_front().unwrap());
+                }
+                None => {
+                    break;
+                }
+            },
         }
     }
 
